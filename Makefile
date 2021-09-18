@@ -2,11 +2,13 @@ CC = gcc
 
 INCLUDE_PATHS=$(shell pwd)
 INCLUDES=$(INCLUDE_PATHS:%=-I%)
+DEFINE=DEBUG=1
+DEFINES=$(DEFINE:%=-D%)
 
 # The CFLAGS variable sets compile flags for gcc:
 #  -g          compile with debug information
 #  -Wall       give verbose compiler warnings
-CFLAGS += -g -Wall $(INCLUDES)
+CFLAGS += -g -Wall $(INCLUDES) $(DEFINES)
 
 SOURCES=$(shell find $$PWD/* -name '*.c' -not -path '*/01-intro-to-c/*')
 

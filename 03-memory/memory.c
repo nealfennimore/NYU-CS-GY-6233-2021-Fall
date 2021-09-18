@@ -4,14 +4,16 @@
 #define INT_MAX 2147483647
 #define FREE 0
 
-void print_memory_map(struct MEMORY_BLOCK memory_map[MAPMAX], int *map_count)
+void print_memory_map(struct MEMORY_BLOCK memory_map[MAPMAX], int *map_cnt)
 {
-    #ifdef DEBUG
+    #if DEBUG
+        printf("******************************************************************\n");
         for (int i = 0; i < *map_cnt; i++)
         {
             struct MEMORY_BLOCK current = memory_map[i];
             printf("idx: %d, start: %d, end: %d, size: %d, proc: %d\n", i, current.start_address, current.end_address, current.segment_size, current.process_id);
         }
+        printf("******************************************************************\n");
     #endif
 }
 
