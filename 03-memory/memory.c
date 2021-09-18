@@ -17,6 +17,38 @@ void print_memory_map(struct MEMORY_BLOCK memory_map[MAPMAX], int *map_cnt)
     #endif
 }
 
+struct MEMORY_BLOCK split_memory_block(int idx, int request_size, struct MEMORY_BLOCK memory_map[MAPMAX], int *map_cnt, int process_id)
+{
+    struct MEMORY_BLOCK selected = memory_map[idx];
+
+    int next_segment_size = selected.segment_size - request_size;
+
+    selected.segment_size = request_size;
+    selected.end_address = selected.start_address + request_size - 1;
+    selected.process_id = process_id;
+    memory_map[idx] = selected;
+
+    struct MEMORY_BLOCK next_block =
+        {
+            .start_address = selected.end_address + 1,
+            .end_address = selected.end_address + next_segment_size,
+            .segment_size = next_segment_size,
+            .process_id = FREE,
+        };
+
+    struct MEMORY_BLOCK former;
+    struct MEMORY_BLOCK next = next_block;
+    (*map_cnt)++;
+    for (int i = idx + 1; i < *map_cnt; i++)
+    {
+        former = memory_map[i];
+        memory_map[i] = next;
+        next = former;
+    }
+
+    return selected;
+}
+
 struct MEMORY_BLOCK NULLBLOCK = {
     .start_address = 0,
     .end_address = 0,
@@ -49,38 +81,12 @@ struct MEMORY_BLOCK best_fit_allocate(int request_size, struct MEMORY_BLOCK memo
         return NULLBLOCK;
     }
 
-    struct MEMORY_BLOCK selected_block = memory_map[best_fit_idx];
+    print_memory_map(memory_map, map_cnt);
 
-    int next_segment_size = selected_block.segment_size - request_size;
-
-    selected_block.segment_size = request_size;
-    selected_block.end_address = selected_block.start_address + request_size - 1;
-    selected_block.process_id = process_id;
-    memory_map[best_fit_idx] = selected_block;
-
-    int prev_end_address = selected_block.end_address;
-    struct MEMORY_BLOCK next_block =
-    {
-        .start_address = prev_end_address + 1,
-        .end_address = prev_end_address + next_segment_size,
-        .segment_size = next_segment_size,
-        .process_id = FREE,
-    };
-
-    struct MEMORY_BLOCK former;
-    struct MEMORY_BLOCK next = next_block;
-    for (int i = best_fit_idx + 1; i < *map_cnt + 1; i++)
-    {
-        former = memory_map[i];
-        memory_map[i] = next;
-        next = former;   
-    }
-    (*map_cnt)++;
-
-
-    return selected_block;
+    return split_memory_block(best_fit_idx, request_size, memory_map, map_cnt, process_id);
 }
 
+// This method allocates memory according to the First Fit scheme. The method is given the process id of the requesting process, size of the memory being requested, and the memory map. It finds the first (lowest starting address) free memory block whose size is at least as large as the requested size. If the free block found is exactly of the same size as the requested size, the method updates the process id to allocate it and returns this memory block. If the free block found is larger than the requested size, the block is split into two pieces - the first piece allocated and the second piece becoming a free block in the memory map. Thus, the method may alter the memory map appropriately. Note that if there is no free block of memory (in the memory map) that is at least as large as the requested size, the method returns the NULLBLOCK.
 struct MEMORY_BLOCK first_fit_allocate(int request_size, struct MEMORY_BLOCK memory_map[MAPMAX], int *map_cnt, int process_id) {}
 
 struct MEMORY_BLOCK worst_fit_allocate(int request_size, struct MEMORY_BLOCK memory_map[MAPMAX], int *map_cnt, int process_id) {}
