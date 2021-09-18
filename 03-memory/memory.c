@@ -18,6 +18,12 @@ void print_memory_map(struct MEMORY_BLOCK memory_map[MAPMAX], int *map_cnt)
     #endif
 }
 
+void print_memory_block(struct MEMORY_BLOCK block){
+    #if DEBUG
+        printf("start: %d, end: %d, size: %d, proc: %d\n", block.start_address, block.end_address, block.segment_size, block.process_id);
+    #endif
+}
+
 struct MEMORY_BLOCK split_memory_block(int idx, int request_size, struct MEMORY_BLOCK memory_map[MAPMAX], int *map_cnt, int process_id)
 {
     struct MEMORY_BLOCK selected = memory_map[idx];
@@ -215,14 +221,18 @@ void release_memory(struct MEMORY_BLOCK freed_block, struct MEMORY_BLOCK memory_
             struct MEMORY_BLOCK prev = memory_map[prev_idx];
             start_address = prev.start_address;
             segment_size += prev.segment_size;
-            start_merge_idx = block_to_free_idx;
+            start_merge_idx = prev_idx;
+
+            print_memory_block(prev);
         }
 
         if(next_idx < *map_cnt && memory_map[next_idx].process_id == FREE){
             struct MEMORY_BLOCK next = memory_map[next_idx];
-            end_address = next.start_address;
+            end_address = next.end_address;
             segment_size += next.segment_size;
-            end_merge_idx = block_to_free_idx;
+            end_merge_idx = next_idx;
+
+            print_memory_block(next);
         }
 
         int blocks_to_merge_cnt = end_merge_idx - start_merge_idx;
@@ -234,7 +244,12 @@ void release_memory(struct MEMORY_BLOCK freed_block, struct MEMORY_BLOCK memory_
             .process_id = FREE
         };
 
-        for(int i = start_merge_idx + 1; i < *map_cnt - blocks_to_merge_cnt; i++){
+        print_memory_block(freed_block);
+        print_memory_block(merged_block);
+
+        memory_map[start_merge_idx] = merged_block;
+        *map_cnt -= blocks_to_merge_cnt;
+        for(int i = start_merge_idx + 1; i < *map_cnt; i++){
             memory_map[i] = memory_map[i + blocks_to_merge_cnt];
         }
     }
