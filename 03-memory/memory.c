@@ -3,6 +3,7 @@
 
 #define INT_MAX 2147483647
 #define FREE 0
+#define DEBUG 0
 
 void print_memory_map(struct MEMORY_BLOCK memory_map[MAPMAX], int *map_cnt)
 {
@@ -150,7 +151,18 @@ struct MEMORY_BLOCK worst_fit_allocate(int request_size, struct MEMORY_BLOCK mem
 struct MEMORY_BLOCK next_fit_allocate(int request_size, struct MEMORY_BLOCK memory_map[MAPMAX], int *map_cnt, int process_id, int last_address) {
     int next_fit_idx = -1;
 
-    for (int i = 1; i < *map_cnt; i++)
+    int last_address_idx = 0;
+
+    print_memory_map(memory_map, map_cnt);
+
+    for (int i = 0; i < *map_cnt; i++){
+        if(memory_map[i].start_address == last_address){
+            last_address_idx = i;
+            break;
+        }
+    }
+
+    for (int i = 0; i < *map_cnt; i++)
     {
         int j = (i + last_address) % *map_cnt;
         struct MEMORY_BLOCK block = memory_map[j];
