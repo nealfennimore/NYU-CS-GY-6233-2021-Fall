@@ -4,14 +4,14 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Memory Build",
+            "label": "Make Build",
             "type": "shell",
-            "command": "make build TARGET=memory MODULE_DIR=03-memory"
+            "command": "make build"
         },
         {
-            "label": "Memory Watch",
+            "label": "Make Watch",
             "type": "shell",
-            "command": "make watch TARGET=memory MODULE_DIR=03-memory"
+            "command": "make watch"
         }
     ]
 }

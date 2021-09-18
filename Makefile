@@ -8,13 +8,11 @@ INCLUDES=$(INCLUDE_PATHS:%=-I%)
 #  -Wall       give verbose compiler warnings
 CFLAGS += -g -Wall $(INCLUDES)
 
-MODULE_DIR := src
+SOURCES=$(shell find $$PWD/* -name '*.c' -not -path '*/01-intro-to-c/*')
 
-SOURCES = $(MODULE_DIR)/$(TARGET).c
-BUILD_TARGET = $(MODULE_DIR)/$(TARGET)
+BUILD_TARGET = main.o
 
-
-all: $(TARGET)
+all: $(BUILD_TARGET)
 
 build:
 	$(CC) -o $(BUILD_TARGET) $(SOURCES) $(CFLAGS)

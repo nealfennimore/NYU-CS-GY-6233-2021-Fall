@@ -4,6 +4,17 @@
 #define INT_MAX 2147483647
 #define FREE 0
 
+void print_memory_map(struct MEMORY_BLOCK memory_map[MAPMAX], int *map_count)
+{
+    #ifdef DEBUG
+        for (int i = 0; i < *map_cnt; i++)
+        {
+            struct MEMORY_BLOCK current = memory_map[i];
+            printf("idx: %d, start: %d, end: %d, size: %d, proc: %d\n", i, current.start_address, current.end_address, current.segment_size, current.process_id);
+        }
+    #endif
+}
+
 struct MEMORY_BLOCK NULLBLOCK = {
     .start_address = 0,
     .end_address = 0,
@@ -16,20 +27,16 @@ struct MEMORY_BLOCK best_fit_allocate(int request_size, struct MEMORY_BLOCK memo
     int best_fit_idx = -1;
     int best_fit_size = INT_MAX;
 
-    // printf("Proc id: %d, Req size: %d, Count: %d, Max: %d\n", process_id, request_size, *map_cnt, MAPMAX);
-
     for (int i = 0; i < *map_cnt; i++)
     {
         struct MEMORY_BLOCK block = memory_map[i];
         if (block.process_id == FREE) {
             if (block.segment_size == request_size)
             {
-                // printf("block found same size: start %d, end %d, size: %d\n", block.start_address, block.end_address, block.segment_size);
                 block.process_id = process_id;
                 memory_map[i] = block;
                 return block;
             } else if (block.segment_size > request_size && block.segment_size < best_fit_size) {
-                // printf("Setting %d, %d, %d, %d\n", block.segment_size, block.process_id, block.start_address, block.end_address);
                 best_fit_size = block.segment_size;
                 best_fit_idx = i;
             }
@@ -41,8 +48,6 @@ struct MEMORY_BLOCK best_fit_allocate(int request_size, struct MEMORY_BLOCK memo
     }
 
     struct MEMORY_BLOCK selected_block = memory_map[best_fit_idx];
-
-    // printf("prev block start: %d, end %d, size %d, proc %d\n", selected_block.start_address, selected_block.end_address, selected_block.segment_size, selected_block.process_id);
 
     int next_segment_size = selected_block.segment_size - request_size;
 
@@ -60,11 +65,6 @@ struct MEMORY_BLOCK best_fit_allocate(int request_size, struct MEMORY_BLOCK memo
         .process_id = FREE,
     };
 
-
-    // printf("current block start: %d, end %d, size %d, proc %d\n", selected_block.start_address, selected_block.end_address, selected_block.segment_size, selected_block.process_id);
-    // printf("stored block start: %d, end %d, size %d, proc %d\n", memory_map[best_fit_idx].start_address, memory_map[best_fit_idx].end_address, memory_map[best_fit_idx].segment_size, memory_map[best_fit_idx].process_id);
-    // printf("next block start: %d, end %d, size %d, proc %d\n", next_block.start_address, next_block.end_address, next_block.segment_size, next_block.process_id);
-
     struct MEMORY_BLOCK former;
     struct MEMORY_BLOCK next = next_block;
     for (int i = best_fit_idx + 1; i < *map_cnt + 1; i++)
@@ -75,12 +75,6 @@ struct MEMORY_BLOCK best_fit_allocate(int request_size, struct MEMORY_BLOCK memo
     }
     (*map_cnt)++;
 
-
-    for (int i = 0; i < *map_cnt; i++)
-    {
-        struct MEMORY_BLOCK current = memory_map[i];
-        // printf("idx: %d, start: %d, end: %d, size: %d, proc: %d\n", i, current.start_address, current.end_address, current.segment_size, current.process_id);
-    }
 
     return selected_block;
 }
@@ -94,46 +88,3 @@ struct MEMORY_BLOCK next_fit_allocate(int request_size, struct MEMORY_BLOCK memo
 void release_memory(struct MEMORY_BLOCK freed_block, struct MEMORY_BLOCK memory_map[MAPMAX], int *map_cnt) {}
 
 
-// int main(int argc, char const *argv[])
-// {
-
-//     // Test Failed :
-//     // 'start: 0, end: 1013, size: 1014, proc: 32
-//     // start: 1014, end: 2027, size: 1014, proc: 0
-//     //Missing Block in memory_map for test 1 [0,9,10,32].
-//     //Here is the memory map.
-//     //[start_address: 0 end_address: 1013 segment_size: 1014 process_id: 32]
-//     //[start_address: 1014 end_address: 2027 segment_size: 1014 process_id: 0]'
-//     int map_cnt = 0;
-//     struct MEMORY_BLOCK memory_map[MAPMAX];
-
-//     int prev_start = 0;
-//     int addition = 10;
-//     for(int i = 0; i < MAPMAX - 1; i++){
-//         struct MEMORY_BLOCK current = {
-//             .process_id = FREE,
-//             .start_address = prev_start + 1,
-//             .end_address = prev_start + addition,
-//             .segment_size = addition
-//         };
-
-//         // printf("start: %d, end: %d, size: %d, proc: %d\n", current.start_address, current.end_address, current.segment_size, current.process_id);
-
-//         memory_map[i] = current;
-//         map_cnt++;
-//         prev_start += addition;
-//     }
-
-//     // struct MEMORY_BLOCK current = {
-//     //     .process_id = FREE,
-//     //     .start_address = 0,
-//     //     .end_address = 1013,
-//     //     .segment_size = 1014};
-
-//     // memory_map[0] = current;
-
-//     int request_size = 5;
-//     best_fit_allocate(request_size, memory_map, &map_cnt, 20);
-
-//     return 0;
-// }
