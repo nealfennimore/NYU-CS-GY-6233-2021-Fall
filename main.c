@@ -105,15 +105,15 @@ void test_virual_memory_page_access_fifo()
     // [is_valid:  1 frame_number: 20 arrival_timestamp: 2 last_access_timestamp: 4 reference_count: 2]
     // [is_valid:  0 frame_number: -1 arrival_timestamp: -1 last_access_timestamp: -1 reference_count: -1]
     // [is_valid:  1 frame_number: 30 arrival_timestamp: 12 last_access_timestamp: 12 reference_count: 1]'
-    int table_cnt = 0;
+    int table_cnt = 8;
     struct PTE page_table[TABLEMAX];
 
     int prev_start = 0;
     int addition = 10;
-    int empty_cnt = 5;
-    int frame_cnt = 0;
+    int empty_cnt = 8;
+    int frame_cnt = 3;
 
-    for (int i = TABLEMAX - empty_cnt; i < TABLEMAX; i++)
+    for (int i = table_cnt - empty_cnt; i < table_cnt; i++)
     {
         struct PTE current = {
             .is_valid = 0,
@@ -123,11 +123,10 @@ void test_virual_memory_page_access_fifo()
             .reference_count = -1};
 
         page_table[i] = current;
-        table_cnt++;
         prev_start += addition;
     }
 
-    for (int i = 0; i < TABLEMAX - empty_cnt; i++)
+    for (int i = 0; i < table_cnt - empty_cnt; i++)
     {
         struct PTE current = {
             .is_valid = 1,
@@ -137,7 +136,6 @@ void test_virual_memory_page_access_fifo()
             .reference_count = 1};
 
         page_table[i] = current;
-        table_cnt++;
         prev_start += addition;
     }
 
@@ -145,12 +143,14 @@ void test_virual_memory_page_access_fifo()
     int frame_pool[POOLMAX];
 
     for (int i = 0; i < frame_cnt; i++){
-        frame_pool[i] = i + POOLMAX;
+        frame_pool[i] = i;
     }
 
     int current_timestamp = 200;
+    int reference_string[REFERENCEMAX] = {0, 3, 2, 6, 3, 4, 5, 2, 4, 5, 6};
+    int reference_cnt = 11;
 
-    process_page_access_fifo(page_table, &table_cnt, page_number, frame_pool, &frame_cnt, current_timestamp);
+    count_page_faults_fifo(page_table, table_cnt, reference_string, reference_cnt, frame_pool, frame_cnt);
 }
 
 int main(int argc, char const *argv[])
