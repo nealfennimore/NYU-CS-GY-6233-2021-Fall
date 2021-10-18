@@ -125,13 +125,16 @@ int process_page_access_fifo(struct PTE page_table[TABLEMAX], int *table_cnt, in
 }
 
 int count_page_faults_fifo(struct PTE page_table[TABLEMAX], int table_cnt, int reference_string[REFERENCEMAX], int reference_cnt, int frame_pool[POOLMAX], int frame_cnt){
+    int timestamp = 1;
     for (int i = 0; i < table_cnt; i++)
     {
         GLOBAL_TABLE[i] = page_table[i];
+        if(page_table[i].arrival_timestamp > timestamp){
+            timestamp = page_table[i].arrival_timestamp;
+        }
     }
 
     PAGE_FAULTS = 0;
-    int timestamp = 1;
     for (int i = 0; i < reference_cnt; i++)
     {
         int page_number = reference_string[i];
@@ -161,7 +164,6 @@ int process_page_access_lru(struct PTE page_table[TABLEMAX], int *table_cnt, int
     {
         int frame_number = get_usable_frame_number(frame_pool, frame_cnt);
         set_page(page_table, page_number, frame_number, current_timestamp, 1);
-        print_page_tables(page_table, table_cnt);
         PAGE_FAULTS++;
         return frame_number;
     }
@@ -180,21 +182,23 @@ int process_page_access_lru(struct PTE page_table[TABLEMAX], int *table_cnt, int
     }
 
     struct PTE current = swap_page(page_table, page_number, earliest_idx, current_timestamp, 1);
-    print_page_tables(page_table, table_cnt);
-    print_page_table(current);
     PAGE_FAULTS++;
     return current.frame_number;
 };
 
 int count_page_faults_lru(struct PTE page_table[TABLEMAX], int table_cnt, int reference_string[REFERENCEMAX], int reference_cnt, int frame_pool[POOLMAX], int frame_cnt)
 {
+    int timestamp = 1;
     for (int i = 0; i < table_cnt; i++)
     {
         GLOBAL_TABLE[i] = page_table[i];
+        if (page_table[i].arrival_timestamp > timestamp)
+        {
+            timestamp = page_table[i].arrival_timestamp;
+        }
     }
 
     PAGE_FAULTS = 0;
-    int timestamp = 1;
     for (int i = 0; i < reference_cnt; i++)
     {
         int page_number = reference_string[i];
@@ -223,7 +227,6 @@ int process_page_access_lfu(struct PTE page_table[TABLEMAX], int *table_cnt, int
     {
         int frame_number = get_usable_frame_number(frame_pool, frame_cnt);
         set_page(page_table, page_number, frame_number, current_timestamp, 1);
-        print_page_tables(page_table, table_cnt);
         PAGE_FAULTS++;
         return frame_number;
     }
@@ -235,30 +238,37 @@ int process_page_access_lfu(struct PTE page_table[TABLEMAX], int *table_cnt, int
     for (int i = 0; i < *table_cnt; i++)
     {
         struct PTE current = page_table[i];
-        if (current.is_valid && current.arrival_timestamp < earliest_timestamp && current.reference_count <= least_ref_cnt)
+        if (current.is_valid && current.reference_count <= least_ref_cnt)
         {
-            earliest_timestamp = current.arrival_timestamp;
-            least_ref_cnt = current.reference_count;
-            earliest_idx = i;
+            if (current.reference_count < least_ref_cnt){
+                least_ref_cnt = current.reference_count;
+                earliest_timestamp = current.arrival_timestamp;
+                earliest_idx = i;
+            } else if (current.arrival_timestamp < earliest_timestamp){
+                earliest_timestamp = current.arrival_timestamp;
+                earliest_idx = i;
+            }
         }
     }
 
     struct PTE current = swap_page(page_table, page_number, earliest_idx, current_timestamp, 1);
-    print_page_tables(page_table, table_cnt);
-    print_page_table(current);
     PAGE_FAULTS++;
     return current.frame_number;
 };
 
 int count_page_faults_lfu(struct PTE page_table[TABLEMAX], int table_cnt, int reference_string[REFERENCEMAX], int reference_cnt, int frame_pool[POOLMAX], int frame_cnt)
 {
+    int timestamp = 1;
     for (int i = 0; i < table_cnt; i++)
     {
         GLOBAL_TABLE[i] = page_table[i];
+        if (page_table[i].last_access_timestamp > timestamp)
+        {
+            timestamp = page_table[i].last_access_timestamp;
+        }
     }
 
     PAGE_FAULTS = 0;
-    int timestamp = 1;
     for (int i = 0; i < reference_cnt; i++)
     {
         int page_number = reference_string[i];
